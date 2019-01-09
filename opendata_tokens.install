@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+
+function opendata_tokens_schema() {
+
+  $schema = array();
+
+  $schema['opendata_tokens'] = array(
+    'description' => 'Tabla para almacenar tokens de usuario',
+    'fields' => array(
+        'id_usuario' => array(
+        'description' => 'id usuario',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default'	=> 0,
+      ),
+      'tkn_usuario' => array(
+        'description' => 'token usuario',
+        'type' => 'varchar',
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'tkn_created_date' => array(
+        'description' => 'Fecha de creacion del token',
+        'pgsql_type' => 'timestamp',
+        'not null' => FALSE,
+        'default' => NULL,
+      ),
+      'tkn_modified_date' => array(
+        'description' => 'Fecha de ultima modificacion del token',
+        'pgsql_type' => 'timestamp',
+        'not null' => FALSE,
+        'default' => NULL,
+      ),
+    ),
+    'primary key' => array(
+      'id_usuario',
+    ),
+  );
+
+  return $schema;
+}

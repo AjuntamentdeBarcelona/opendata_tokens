@@ -1,0 +1,513 @@
+<?php 
+
+/**
+ * 
+ * Implements opendata_tokens_block_info()
+ * Información que tiene el blocke a visualizar
+ *
+ */
+function opendata_tokens_block_info() {
+	
+	$blocks['opendata_tokens'] = array(
+		'info'	=> t('Token de acceso'),
+		// Nombre que aparecera en la lista de blocs
+		// Configuracion por defecto
+		'cache'	=> DRUPAL_CACHE_PER_ROLE,
+	);
+	
+	return $blocks;
+}
+
+/**
+ * 
+ * Implements opendata_tokens_block_view($delta = ''): convierte en contenido la informacion recogida/generada
+ *
+ * @param delta 
+ *   indica a la funcion que bloque esta siendo "pedido"
+ * @return array
+ * 	devuelve un array con dos valores: subject y content
+ */
+
+function opendata_tokens_block_view( $delta = '' ) {
+	
+	switch($delta)
+	{
+		case 'opendata_tokens':
+			global $user;
+
+			$titulo = opendata_tokens_textos('titulo')['titulo'];
+			$block['subject'] = $titulo;
+
+			if (user_access('access content')) {
+				
+				// User[] roles: [1] anonymous, [2] authenticated user [3] administrator
+				$block['content']['button_solicitar'] = drupal_render(drupal_get_form('opendata_tokens_form_solicitar'));
+				$block['content']['button_recuperar'] = drupal_render(drupal_get_form('opendata_tokens_form_recuperar'));
+				$block['content']['button_confirm']	  = drupal_render(drupal_get_form('opendata_tokens_form_confirm'));
+				$block['content']['button_modal'] 	  = opendata_tokens_textos('modal')['modal'];
+				if( isset($user->roles[1]) )
+				{
+					$block['subject'] = "";
+					// Usuario anónimo
+					//$block['content'] = opendata_tokens_text_info(false);
+					$texto = opendata_tokens_textos( 'no_user' );
+					$block['content'] = $texto['info'];
+				}
+				else
+				{
+					// Usuario registrado
+					// Comprobaos si tiene token
+					$token = opendata_tokens_get_token();
+					if( empty($token) || $token == "" )
+					{
+						// No tiene token
+						$block['content'] = $block['content']['button_solicitar'];
+					}
+					else
+					{
+						// Tiene token
+						$texto = opendata_tokens_textos( 'recuperar' );
+						$block['content'] = '<p>' . $texto['token'] . '</p><pre class="token">'. $token . '</pre>' . $block['content']['button_modal'];					
+					}
+						
+				}
+			}
+			return $block;
+	}
+}
+
+/**
+ * 
+ * Implements opendata_tokens_get_token()
+ *
+ */
+
+// Coger token de usuario para mostrarselo
+function opendata_tokens_get_token() 
+{
+
+	// Cogemos id de usuario
+	global $user;
+	$userID = $user->uid;
+	$query = "";
+	
+	// Seleccionamos el token del usuario
+	try
+	{
+		$query = db_select('opendata_tokens','t')
+				 ->fields('t')->condition('id_usuario', $userID)
+				 ->execute();
+
+	}catch( PDOException $e )
+	{
+		$texto = opendata_tokens_textos( 'error' );
+		drupal_set_message( $texto['error'] , 'error');
+	}
+
+	$token = ( $query->rowCount() == 1) ? $query->fetch()->tkn_usuario : "";
+
+	return $token;
+}
+
+
+// Inserta token
+function opendata_tokens_insert_token( $token = null )
+{
+	global $user;
+	$result = "";
+
+	if( !is_null($token) || $token != "" )
+	{
+		// Comprobamos si existe ese token en la bd?
+		while ( opendata_tokens_existe_token( $token ) )
+		{
+			$token = opendata_tokens_generar_token();
+		}
+
+		$transaction = db_transaction();
+		
+		try{
+			$query = db_insert('opendata_tokens')
+					 ->fields( array( 'id_usuario' => $user->uid ,'tkn_usuario' => $token,'tkn_created_date' => date('d-m-Y  H:i:s'), 'tkn_modified_date' => date('d-m-Y  H:i:s') ) )
+					 ->execute();
+			
+		}catch( PDOException $e )
+		{ 	
+			$transaction->rollback();
+			$texto = opendata_tokens_textos( 'error' );
+			drupal_set_message( $texto['error'] , 'error');
+		}
+		
+		$result = $token; 
+	}
+	else
+	{
+		$result = "";
+	}
+		
+	return $result;
+}
+
+
+
+// Actualiza token
+function opendata_tokens_update_token()
+{
+	$token = opendata_tokens_generar_token();
+	global $user;
+
+	$transaction = db_transaction();
+
+	try{
+
+		$query = db_update('opendata_tokens')
+				 ->fields( array( 'tkn_usuario' => $token, 'tkn_modified_date' => date('d-m-Y  H:i:s') ) )
+				 ->condition('id_usuario', $user->uid )
+				 ->execute();
+
+	}catch( PDOException $e )
+	{
+		$transaction->rollback();
+		$texto = opendata_tokens_textos( 'error' );
+		drupal_set_message( $texto['error'] , 'error');
+	}
+
+	return $token;
+	//print_r("UODATE " .$token);
+	/*if( $query->rowCount() == 1 )
+	{
+		//Se ha añadido
+	}*/
+	
+}
+
+
+// Comprueba si ese token esta usandose
+function opendata_tokens_existe_token( $token )
+{
+	$exists = false; 
+
+	try{
+
+		$query = db_select('opendata_tokens','t')
+				 ->fields('t')
+				 ->condition('tkn_usuario', $token)
+				 ->execute();
+
+	}catch( PDOException $e ){}
+
+	$exists = ( $query->rowCount() == 1) ? true : false;
+	
+	return $exists;
+}
+
+/**
+ * 
+ * Implements opendata_tokens_text_info()
+ *
+ */
+ 
+ function opendata_tokens_text_info( $user = false, $token = false )
+ {
+	 $texto = "";
+	 if( $user )
+	 {
+	 	if( $token )
+	 	{
+	 		// Esta logueado
+			$texto = "<div style='margin-bottom: 10px;'>
+						<h1>" . t('Usuario SI registrado'). "</h1>";
+			$texto .=		"<p>" . t('Aqui puedes recuperar tu <i>token</i> de usuario si lo has expuesto y necesitas uno nuevo.') ."</p>";
+			$texto .=		"<p>" . t(' A continuaci&oacuten, se muestra un bot&oacuten para recuperar el token.') . "</p>";
+			$texto .=		"<p>" . t('Este es tu token actual: '). "</p></div>";
+			// Tiene token
+			// No tiene token
+	 	}else
+	 	{
+	 		$texto = "<div style='margin-bottom: 10px;'>
+						<h1>" . t('Usuario SI registrado'). "</h1>";
+			$texto .=	"<p>" . t('Aqu&iacute puedes solicitar tu <i>token</i> de usuario para poder acceder a los servicios web de BSM.') . "</p>";
+			$texto .=	"<p>" . t(' A continuaci&oacuten, se muestra un bot&oacuten para generar el token.') . "</p></div>";
+	 	}
+		 
+	 }else
+	 {
+		 $texto = "<div>
+						<h1>" . t('Usuario NO registrado') . "</h1>";
+		$texto .= "<p>" . t('Para poder solicitar tu <i>token</i> debes de ser un usuario registrado.') . "</p>";
+		$texto .= "<p>" . t('Por favor, <a href="@drupal-registro">registrate</a> o <a href="@drupal-login">identif&iacutecate</a> para poder acceder a este servicio.', 
+							array( '@drupal-registro' => 'user/register' , '@drupal-login' => 'user/login') ) . "</p></div>";
+	 }
+	 
+	 return $texto;
+ }
+ 
+ /**
+ * 
+ * Implements opendata_tokens_menu()
+ * Configuración del módulo: de momento, creo que no hace falta
+ * Puede servir para habilitar o desabhilitar este modulo.
+ */
+ 
+function opendata_tokens_menu()
+{
+	$items = array();
+	
+	$items['test-tokens'] = array(
+		'title'				=> 'Botón para solicitar token',
+		'description'		=> 'Botón para solicitar token',
+		'page callback'		=> 'opendata_tokens_block_view',
+		'page arguments'	=> array('opendata_tokens_form_solicitar', 'opendata_tokens_form_recuperar'),
+		'access callback'	=> TRUE,
+	);
+	
+	return $items;
+}
+
+/******************************/    
+/**     Solicitar token     **/
+/****************************/
+function opendata_tokens_form_solicitar( $form, &$form_state )
+{
+	$texto = opendata_tokens_textos('solicitar');
+	
+	$form['submit_button'] = array( 
+		'#type'		=> 'submit',
+		'#name'		=> 'Token',
+		'#value'	=> $texto['boton'],
+	);
+	
+	return $form;
+}
+
+function opendata_tokens_form_solicitar_submit( $form, &$form_state )
+{
+	// Aqui debera de generar el token y guardarlo en la base de datos
+	$token = opendata_tokens_generar_token();
+
+	if( !empty($token) ) {
+		$result = opendata_tokens_insert_token($token); 
+	}
+
+	$texto = opendata_tokens_textos( 'solicitar' );
+	if( $result != "" )
+	{
+		drupal_set_message( $texto['exito']  );
+	}
+	else{
+		drupal_set_message( $texto['error'] , 'error');
+	}
+
+}
+
+function opendata_tokens_generar_token()
+{
+	$token = bin2hex(openssl_random_pseudo_bytes(32));
+	return $token;
+}
+
+/******************************/    
+/**     Recuperar token     **/
+/****************************/
+function opendata_tokens_form_recuperar( $form, &$form_state )
+{
+	$texto = opendata_tokens_textos( 'confirmar' );
+
+	$form['submit_button'] = array( 
+		'#type'		=> 'submit',
+		'#name'		=> 'Token' ,
+		'#value'	=> $texto['confirm'],
+		//'#default_value' => variable_get('submit_button', false),
+	);
+	
+	return $form;
+}
+
+function opendata_tokens_form_recuperar_submit( $form, &$form_state )
+{
+	// Aqui debera de generar el token y guardarlo en la base de datos
+	$texto = opendata_tokens_textos( 'recuperar' );
+	drupal_set_message( $texto['exito'] );
+	
+	$new_token = opendata_tokens_update_token();
+}
+
+
+function opendata_tokens_textos( $boton )
+{
+	global $language;
+	$texto = array();
+	
+	if( $boton == 'titulo' )
+	{
+		switch( $language->language )
+		{
+			case 'es':
+				$texto['titulo'] = 'Token de acceso';
+				break;
+			
+			case 'en':
+				$texto['titulo'] = 'Access token';
+				break;
+			
+			case 'ca':
+				$texto['titulo'] = 'Token d&apos;access';
+				break;
+		}
+	}
+	
+	if( $boton == 'solicitar' )
+	{
+		switch( $language->language )
+		{
+			case 'es':
+				$texto['boton'] = 'Solicitar token';
+				$texto['exito'] = 'Token solicitado con &eacutexito';
+				$texto['error']	 = 'No se ha podido generar el token';
+				break;
+			
+			case 'en':
+				$texto['boton'] = 'Request token';
+				$texto['exito'] = 'Successful requested token';
+				$texto['error']	 = 'The token could not be requested';
+				break;
+			
+			case 'ca':
+				$texto['boton'] = 'Sol&middot;licitar token';
+				$texto['exito'] = 'Token sol&middot;licitat amb &eagravexit';
+				$texto['error']	 = 'No s&apos;ha pogut generar el token';
+				break;
+		}
+	}
+
+	if( $boton == 'recuperar' )
+	{
+		switch( $language->language )
+		{
+			case 'es':
+				$texto['boton'] 	= 'Regenerar token';
+				$texto['token'] 	= 'Este es tu <i>token</i>:';
+				$texto['exito'] 	= 'Token regenerado con &eacutexito';
+				$texto['error']		= 'No se ha podido regenerar el token';
+				break;
+
+			case 'en':
+				$texto['boton'] = 'Regenerate token';
+				$texto['token'] = 'This is your <i>token</i>:';
+				$texto['exito'] = 'Successfully regenerated token';
+				$texto['error']	 = 'The token could not be regenerated';
+				break;
+
+			case 'ca':
+				$texto['boton'] = 'Regenerar token';
+				$texto['token'] = 'Aquest es el teu <i>token</i>:';
+				$texto['exito'] = 'Token regenerat amb &egravexit';
+				$texto['error']	 = 'No s&apos;ha pogut regenerar el token';
+				break;
+		}
+	}
+	if( $boton == 'error' )
+	{
+		switch( $language->language )
+		{
+			case 'es':
+				$texto['error'] = 'Se ha producido un error. Int&eacutentelo de nuevo m&aacutes tarde o contacte con los administradores del sitio web';
+				break;
+
+			case 'en':
+				$texto['error'] = 'An error has occurred. Try it later or make contact with the site administrators.';
+				break;
+
+			case 'ca':
+				$texto['error'] = 'S&apos;ha produ&iuml;t un error. Ho a provar m&eacutes tard o contacteu amb els administradors del lloc web';
+				break;
+		}
+		
+	}
+	if( $boton == 'no_user')
+	{
+		switch( $language->language )
+		{
+			case 'es':
+				$texto['info'] =  "<div><h2>Usuario no registrado</h2>
+									<p>Para poder solicitar tu <i>token</i> debes de ser un usuario registrado.</p>";
+				$texto['info'].=  t('Por favor, <a href="@drupal-registro">registrate</a> o <a href="@drupal-login">identif&iacutecate</a> para poder acceder a este servicio.', 
+									array( '@drupal-registro' => 'user/register' , '@drupal-login' => 'user/login') ).'</p></div>';
+				break;
+
+			case 'en':
+				$texto['info'] =  "<div><h2>Unregistered user</h2>
+									<p>To be able to request your <i>token</i> you must be a registered user.</p>";
+				$texto['info'].=  t('Please, <a href="@drupal-registro">sing up</a> or <a href="@drupal-login">log in</a> to access this service.', 
+									array( '@drupal-registro' => 'user/register' , '@drupal-login' => 'user/login') ).'</p></div>';
+				break;
+
+			case 'ca':
+				$texto['info'] =  "<div><h2>Usuari no registrat</h2>
+									<p>Per a poder sol&middot;licitar el teu <i>token</i> has de ser un usuari registrat.</p>";
+				$texto['info'].=  t('Si us plau, <a href="@drupal-registro">registra&apos;t</a> o <a href="@drupal-login">identifica&apos;t</a> per poder accedir a aquest servei.', 
+									array( '@drupal-registro' => 'user/register' , '@drupal-login' => 'user/login') ).'</p></div>';
+				break;
+		}
+	}
+	if( $boton == 'confirmar' )
+	{
+		switch( $language->language )
+		{
+			case 'es':
+				
+				$texto['confirm']	= 'Confirmar';
+				$texto['cancelar'] 	= 'Cancelar';
+				$texto['pregunta']  = '&iquest;Est&aacutes seguro de que quieres regenerar tu <i>token</i>?';
+				$texto['info']		= '<p>Si regeneras tu <i>token</i>, se generar&aacute uno nuevo y tendr&aacutes que cambiarlo en todos los sitios d&oacutende estes utiliz&aacutendolo.</p>
+										<p>Si no est&aacutes seguro, pulsa el bot&oacuten cancelar.</p>';
+				break;
+
+			case 'en':
+				$texto['confirm']	= 'Confirm';
+				$texto['cancelar'] 	= 'Cancel';
+				$texto['pregunta']  = 'Are you sure you want to regenerate your <i>token</i>?';
+				$texto['info']		= '<p>If you regenerate your <i>token</i>, a new one will be generated and you will have to change it in all the places where you are using it.</p>
+										<p>If you are not sure, press the cancel button.</p>';
+				break;
+
+			case 'ca':
+				$texto['confirm']	= 'Confirmar';
+				$texto['cancelar'] 	= 'Cancel&middot;lar';
+				$texto['pregunta'] 	= 'Segur que vols regenerar el teu <i>token</i>?';
+				$texto['info']		= '<p>Si regeneres el teu <i>token</i>, es generar&aacute un de nou i haur&aacutes de canviarl-lo en tots els llocs on estiguis utilizandolo.</p>
+										<p>Si no est&aacutes segur, prem el bot&ograve cancel&middot;lar.</p>';
+				break;
+		}
+	}
+	if( $boton == 'modal' )
+	{
+		$recuperar = opendata_tokens_textos( 'recuperar' );
+		$modal = opendata_tokens_textos( 'confirmar' );
+		
+		$texto['modal'] = '<button type="button" class="btn btn-default" data-toggle="modal" data-target="#myModal">
+							 '. $recuperar['boton'] .'
+							</button>
+
+							<!-- Modal -->
+							<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+							  <div class="modal-dialog" role="document">
+								<div class="modal-content">
+								  <div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title" id="myModalLabel">'. $modal['pregunta'] .'</h4>
+								  </div>
+								  <div class="modal-body">
+									'. $modal['info'].'
+								  </div>
+								  <div class="modal-footer">
+									<button type="button" class="btn btn-default pull-left" data-dismiss="modal">'. $modal['cancelar'] .'</button>
+									'. drupal_render(drupal_get_form('opendata_tokens_form_recuperar')).'
+								  </div>
+								</div>
+							  </div>
+							</div>';
+	}
+
+	return $texto;
+}

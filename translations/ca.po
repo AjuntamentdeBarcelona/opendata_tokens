@@ -1,0 +1,29 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: 2018-12-17 16:30+0100\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ca\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 2.2\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: opendata_tokens.module:209
+msgid "Aqui puedes recuperar tu <i>token</i> de usuario si lo has expuesto y necesitas uno nuevo."
+msgstr "Aquí pots recuperar el token d'usuari si ho has exposat i necessites un de nou"
+
+#: opendata_tokens.module:210
+msgid "A continuaci&oacuten, se muestra un bot&oacuten para recuperar el token."
+msgstr "A continuaci&oacute, es mostra un bot&oacute per a recuperar el token."
+
+#: opendata_tokens.module:211
+msgid "Este es tu token actual:"
+msgstr "Aquest és el teu token actual"
+
+

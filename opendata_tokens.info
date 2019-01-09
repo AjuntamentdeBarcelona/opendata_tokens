@@ -1,0 +1,8 @@
+name = Tokens Usuario
+description = El usuario obtienen un token para poder acceder a los servicios web disponibles.
+core = 7.x
+package = OpenData
+version = 7.x-1.0
+
+; Create a linked button to the configuration page in the modules page
+configure = admin/config/content/opendata_tokens
