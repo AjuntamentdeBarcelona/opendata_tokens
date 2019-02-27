@@ -43,7 +43,6 @@ function opendata_tokens_block_view( $delta = '' ) {
 				// User[] roles: [1] anonymous, [2] authenticated user [3] administrator
 				$block['content']['button_solicitar'] = drupal_render(drupal_get_form('opendata_tokens_form_solicitar'));
 				$block['content']['button_recuperar'] = drupal_render(drupal_get_form('opendata_tokens_form_recuperar'));
-				$block['content']['button_confirm']	  = drupal_render(drupal_get_form('opendata_tokens_form_confirm'));
 				$block['content']['button_modal'] 	  = opendata_tokens_textos('modal')['modal'];
 				if( isset($user->roles[1]) )
 				{
@@ -128,17 +127,16 @@ function opendata_tokens_insert_token( $token = null )
 		
 		try{
 			$query = db_insert('opendata_tokens')
-					 ->fields( array( 'id_usuario' => $user->uid ,'tkn_usuario' => $token,'tkn_created_date' => date('d-m-Y  H:i:s'), 'tkn_modified_date' => date('d-m-Y  H:i:s') ) )
+					 ->fields( array( 'id_usuario' => $user->uid ,'tkn_usuario' => $token,'tkn_created_date' => date('Y-m-d  H:i:s'), 'tkn_modified_date' => date('Y-m-d  H:i:s') ) )
 					 ->execute();
+			$result = "ok";
 			
-		}catch( PDOException $e )
-		{ 	
+		} catch( PDOException $e ) { 	
 			$transaction->rollback();
 			$texto = opendata_tokens_textos( 'error' );
 			drupal_set_message( $texto['error'] , 'error');
+			$result = ""; 
 		}
-		
-		$result = $token; 
 	}
 	else
 	{
