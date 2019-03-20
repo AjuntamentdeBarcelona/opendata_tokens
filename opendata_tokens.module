@@ -427,7 +427,7 @@ function opendata_tokens_textos( $boton )
 		switch( $language->language )
 		{
 			case 'es':
-				$texto['info'] =  "<div><h2>Registro o Identificación</h2>
+				$texto['info'] =  "<div><h2>Registro o Identificaci&oacute;n</h2>
 									<p>Para poder solicitar tu <i>token</i> debes de ser un usuario registrado.</p>";
 				$texto['info'].=  t('Por favor, <a href="@drupal-registro">registrate</a> o <a href="@drupal-login">identif&iacutecate</a> para poder acceder a este servicio.', 
 									array( '@drupal-registro' => 'user/register' , '@drupal-login' => 'user/login') ).'</p></div>';
@@ -441,7 +441,7 @@ function opendata_tokens_textos( $boton )
 				break;
 
 			case 'ca':
-				$texto['info'] =  "<div><h2>Registre o Identificació</h2>
+				$texto['info'] =  "<div><h2>Registre o Identificaci&oacute;</h2>
 									<p>Per a poder sol&middot;licitar el teu <i>token</i> has de ser un usuari registrat.</p>";
 				$texto['info'].=  t('Si us plau, <a href="@drupal-registro">registra&apos;t</a> o <a href="@drupal-login">identifica&apos;t</a> per poder accedir a aquest servei.', 
 									array( '@drupal-registro' => 'user/register' , '@drupal-login' => 'user/login') ).'</p></div>';
