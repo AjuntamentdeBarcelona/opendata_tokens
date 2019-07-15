@@ -3,7 +3,7 @@
 /**
  * 
  * Implements opendata_tokens_block_info()
- * Información que tiene el blocke a visualizar
+ * Informacion que tiene el blocke a visualizar
  *
  */
 function opendata_tokens_block_info() {
@@ -47,7 +47,7 @@ function opendata_tokens_block_view( $delta = '' ) {
 				if( isset($user->roles[1]) )
 				{
 					$block['subject'] = "";
-					// Usuario anónimo
+					// Usuario anonimo
 					//$block['content'] = opendata_tokens_text_info(false);
 					$texto = opendata_tokens_textos( 'no_user' );
 					$block['content'] = $texto['info'];
@@ -174,7 +174,7 @@ function opendata_tokens_update_token()
 	//print_r("UODATE " .$token);
 	/*if( $query->rowCount() == 1 )
 	{
-		//Se ha añadido
+		//Se ha anyadido
 	}*/
 	
 }
@@ -243,7 +243,7 @@ function opendata_tokens_existe_token( $token )
  /**
  * 
  * Implements opendata_tokens_menu()
- * Configuración del módulo: de momento, creo que no hace falta
+ * Configuracion del moo: de momento, creo que no hace falta
  * Puede servir para habilitar o desabhilitar este modulo.
  */
  
@@ -252,8 +252,8 @@ function opendata_tokens_menu()
 	$items = array();
 	
 	$items['test-tokens'] = array(
-		'title'				=> 'Botón para solicitar token',
-		'description'		=> 'Botón para solicitar token',
+		'title'				=> 'Bot&oacuten para solicitar token',
+		'description'		=> 'Bot&oacuten para solicitar token',
 		'page callback'		=> 'opendata_tokens_block_view',
 		'page arguments'	=> array('opendata_tokens_form_solicitar', 'opendata_tokens_form_recuperar'),
 		'access callback'	=> TRUE,
