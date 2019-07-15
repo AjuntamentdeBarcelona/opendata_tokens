@@ -1,5 +1,10 @@
 <?php 
 
+
+function hook_init() {
+    drupal_page_is_cacheable(FALSE);
+}
+
 /**
  * 
  * Implements opendata_tokens_block_info()
@@ -12,7 +17,7 @@ function opendata_tokens_block_info() {
 		'info'	=> t('Token de acceso'),
 		// Nombre que aparecera en la lista de blocs
 		// Configuracion por defecto
-		'cache'	=> DRUPAL_CACHE_PER_ROLE,
+		'cache'	=> DRUPAL_NO_CACHE,
 	);
 	
 	return $blocks;
@@ -29,6 +34,8 @@ function opendata_tokens_block_info() {
  */
 
 function opendata_tokens_block_view( $delta = '' ) {
+	
+	drupal_page_is_cacheable(FALSE);
 	
 	switch($delta)
 	{
@@ -134,7 +141,7 @@ function opendata_tokens_insert_token( $token = null )
 		} catch( PDOException $e ) { 	
 			$transaction->rollback();
 			$texto = opendata_tokens_textos( 'error' );
-			drupal_set_message( $texto['error'] , 'error');
+			drupal_set_message( $texto['error'] . ". " . $e->getMessage() , 'error');
 			$result = ""; 
 		}
 	}
@@ -159,7 +166,7 @@ function opendata_tokens_update_token()
 	try{
 
 		$query = db_update('opendata_tokens')
-				 ->fields( array( 'tkn_usuario' => $token, 'tkn_modified_date' => date('d-m-Y  H:i:s') ) )
+				 ->fields( array( 'tkn_usuario' => $token, 'tkn_modified_date' => date('Y-m-d  H:i:s') ) )
 				 ->condition('id_usuario', $user->uid )
 				 ->execute();
 
