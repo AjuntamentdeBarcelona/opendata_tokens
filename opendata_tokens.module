@@ -385,7 +385,7 @@ function opendata_tokens_textos( $boton )
 			case 'es':
 				$texto['boton'] 	= 'Regenerar token';
 				$texto['token'] 	= 'Este es tu <i>token</i>:';
-				$texto['exito'] 	= 'Token regenerado con &eacutexito';
+				$texto['exito'] 	= 'Token regenerado con &eacute;xito';
 				$texto['error']		= 'No se ha podido regenerar el token';
 				break;
 
@@ -399,7 +399,7 @@ function opendata_tokens_textos( $boton )
 			case 'ca':
 				$texto['boton'] = 'Regenerar token';
 				$texto['token'] = 'Aquest es el teu <i>token</i>:';
-				$texto['exito'] = 'Token regenerat amb &egravexit';
+				$texto['exito'] = 'Token regenerat amb &egrave;xit';
 				$texto['error']	 = 'No s&apos;ha pogut regenerar el token';
 				break;
 		}
