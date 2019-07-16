@@ -463,25 +463,25 @@ function opendata_tokens_textos( $boton )
 				
 				$texto['confirm']	= 'Confirmar';
 				$texto['cancelar'] 	= 'Cancelar';
-				$texto['pregunta']  = '&iquest;Est&aacutes seguro de que quieres regenerar tu <i>token</i>?';
-				$texto['info']		= '<p>Si regeneras tu <i>token</i>, se generar&aacute uno nuevo y tendr&aacutes que cambiarlo en todos los sitios d&oacutende estes utiliz&aacutendolo.</p>
-										<p>Si no est&aacutes seguro, pulsa el bot&oacuten cancelar.</p>';
+				$texto['pregunta']  = '¿Seguro que desea regenerar el token?';
+				$texto['info']		= '<p>Si pulsa Aceptar, se generar&aacute; uno nuevo dehabilitando el token previo, y por tanto, habr&aacute; que tenerlo en cuenta en todas las llamadas donde se hace uso. <p>
+										<p>Si no est&aacutes seguro, pulsa el bot&oacuten Cancelar.</p>';
 				break;
 
 			case 'en':
 				$texto['confirm']	= 'Confirm';
 				$texto['cancelar'] 	= 'Cancel';
-				$texto['pregunta']  = 'Are you sure you want to regenerate your <i>token</i>?';
-				$texto['info']		= '<p>If you regenerate your <i>token</i>, a new one will be generated and you will have to change it in all the places where you are using it.</p>
-										<p>If you are not sure, press the cancel button.</p>';
+				$texto['pregunta']  = 'Are you sure you want to regenerate the <i>token</i>?';
+				$texto['info']		= '<p>If you press Accept, a new one will be generated, disabling the previous token, and therefore, it will have to be taken into account in all calls where it is used. </p>
+										<p>If you are not sure, press the Cancel button.</p>';
 				break;
 
 			case 'ca':
 				$texto['confirm']	= 'Confirmar';
 				$texto['cancelar'] 	= 'Cancel&middot;lar';
-				$texto['pregunta'] 	= 'Segur que vols regenerar el teu <i>token</i>?';
-				$texto['info']		= '<p>Si regeneres el teu <i>token</i>, es generar&aacute un de nou i haur&aacutes de canviarl-lo en tots els llocs on estiguis utilizandolo.</p>
-										<p>Si no est&aacutes segur, prem el bot&ograve cancel&middot;lar.</p>';
+				$texto['pregunta'] 	= 'Segur que voleu regenerar el token?';
+				$texto['info']		= '<p>Si premeu Acceptar, se&#39;n generar&agrave; un de nou deshabilitant el token previ, i per tant, caldr&agrave; tenir-ho en compte en totes les crides on se&#39;n fa &uacute;s. </p>
+										<p>Si no est&agrave;s segur, prem el bot&oacute; Cancel&middot;lar.</p>';
 				break;
 		}
 	}
