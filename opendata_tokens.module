@@ -530,7 +530,7 @@ function opendata_tokens_textos( $boton )
 				break;
 
 			case 'ca':
-				$salir	= 'Eixir';
+				$salir	= 'Sortir';
 				break;
 		}
 		
