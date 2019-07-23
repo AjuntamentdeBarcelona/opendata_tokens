@@ -16,7 +16,6 @@ function opendata_tokens_block_info() {
 	$blocks['opendata_tokens'] = array(
 		'info'	=> t('Token de acceso'),
 		// Nombre que aparecera en la lista de blocs
-		// Configuracion por defecto
 		'cache'	=> DRUPAL_NO_CACHE,
 	);
 	
@@ -51,6 +50,9 @@ function opendata_tokens_block_view( $delta = '' ) {
 				$block['content']['button_solicitar'] = drupal_render(drupal_get_form('opendata_tokens_form_solicitar'));
 				$block['content']['button_recuperar'] = drupal_render(drupal_get_form('opendata_tokens_form_recuperar'));
 				$block['content']['button_modal'] 	  = opendata_tokens_textos('modal')['modal'];
+				$block['content']['button_salir'] 	  = opendata_tokens_textos('salir')['salir'];
+				
+				//Solo un block['content']
 				if( isset($user->roles[1]) )
 				{
 					$block['subject'] = "";
@@ -67,15 +69,16 @@ function opendata_tokens_block_view( $delta = '' ) {
 					if( empty($token) || $token == "" )
 					{
 						// No tiene token
-						$block['content'] = $block['content']['button_solicitar'];
+						$block['content'] = $block['content']['button_solicitar'] .' PORYEBA '. $block['content']['button_salir'];
 					}
 					else
 					{
 						// Tiene token
 						$texto = opendata_tokens_textos( 'recuperar' );
-						$block['content'] = '<p>' . $texto['token'] . '</p><pre class="token">'. $token . '</pre>' . $block['content']['button_modal'];					
+						$block['content'] = '<p>' . $texto['token'] . '</p><pre class="token">'. $token . '</pre>' . $block['content']['button_modal']. $block['content']['button_salir'];					
 					}
-						
+					
+					
 				}
 			}
 			return $block;
@@ -337,7 +340,6 @@ function opendata_tokens_form_recuperar_submit( $form, &$form_state )
 	$new_token = opendata_tokens_update_token();
 }
 
-
 function opendata_tokens_textos( $boton )
 {
 	global $language;
@@ -512,6 +514,29 @@ function opendata_tokens_textos( $boton )
 								</div>
 							  </div>
 							</div>';
+	}
+	
+	if( $boton == 'salir' )
+	{
+		$salir = "";
+		switch( $language->language )
+		{
+			case 'es':
+				$salir	= 'Salir';
+				break;
+
+			case 'en':
+				$salir	= 'Logout';
+				break;
+
+			case 'ca':
+				$salir	= 'Eixir';
+				break;
+		}
+		
+		$texto['salir'] = t('<a href="@drupal-logout" class="btn btn-primary" >'.$salir.'</a>',array( '@drupal-logout' => 'user/logout'));
+		
+		
 	}
 
 	return $texto;
