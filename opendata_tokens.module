@@ -523,17 +523,17 @@ function opendata_tokens_textos( $boton )
 		{
 			case 'es':
 				$salir	= 'Salir';
-				$texto['salir'] = t('<a href="@drupal-logout" class="btn btn-primary" >'.$salir.'</a>',array( '@drupal-logout' => 'user/logout?redirect=http://opendatabcn-desa.alfatecsistemas.es/es/tokens'));
+				$texto['salir'] = t('<a href="@drupal-logout" class="btn btn-primary" >'.$salir.'</a>',array( '@drupal-logout' => 'user/logout'));
 				break;
 
 			case 'en':
 				$salir	= 'Logout';
-				$texto['salir'] = t('<a href="@drupal-logout" class="btn btn-primary" >'.$salir.'</a>',array( '@drupal-logout' => 'user/logout?redirect=http://opendatabcn-desa.alfatecsistemas.es/en/tokens'));
+				$texto['salir'] = t('<a href="@drupal-logout" class="btn btn-primary" >'.$salir.'</a>',array( '@drupal-logout' => 'user/logout'));
 				break;
 
 			case 'ca':
 				$salir	= 'Sortir';
-				$texto['salir'] = t('<a href="@drupal-logout" class="btn btn-primary" >'.$salir.'</a>',array( '@drupal-logout' => 'user/logout?redirect=http://opendatabcn-desa.alfatecsistemas.es/ca/tokens'));
+				$texto['salir'] = t('<a href="@drupal-logout" class="btn btn-primary" >'.$salir.'</a>',array( '@drupal-logout' => 'user/logout'));
 				break;
 		}
 		
