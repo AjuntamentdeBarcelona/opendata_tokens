@@ -69,7 +69,7 @@ function opendata_tokens_block_view( $delta = '' ) {
 					if( empty($token) || $token == "" )
 					{
 						// No tiene token
-						$block['content'] = $block['content']['button_solicitar'] .' PORYEBA '. $block['content']['button_salir'];
+						$block['content'] = $block['content']['button_solicitar'] . $block['content']['button_salir'];
 					}
 					else
 					{
@@ -523,18 +523,19 @@ function opendata_tokens_textos( $boton )
 		{
 			case 'es':
 				$salir	= 'Salir';
+				$texto['salir'] = t('<a href="@drupal-logout" class="btn btn-primary" >'.$salir.'</a>',array( '@drupal-logout' => 'user/logout?redirect=http://opendatabcn-desa.alfatecsistemas.es/es/tokens'));
 				break;
 
 			case 'en':
 				$salir	= 'Logout';
+				$texto['salir'] = t('<a href="@drupal-logout" class="btn btn-primary" >'.$salir.'</a>',array( '@drupal-logout' => 'user/logout?redirect=http://opendatabcn-desa.alfatecsistemas.es/en/tokens'));
 				break;
 
 			case 'ca':
 				$salir	= 'Sortir';
+				$texto['salir'] = t('<a href="@drupal-logout" class="btn btn-primary" >'.$salir.'</a>',array( '@drupal-logout' => 'user/logout?redirect=http://opendatabcn-desa.alfatecsistemas.es/ca/tokens'));
 				break;
 		}
-		
-		$texto['salir'] = t('<a href="@drupal-logout" class="btn btn-primary" >'.$salir.'</a>',array( '@drupal-logout' => 'user/logout'));
 		
 		
 	}
