@@ -438,7 +438,7 @@ function opendata_tokens_textos( $boton )
 			case 'es':
 				$texto['info'] =  "<div><h2>Registro o Identificaci&oacute;n</h2>
 									<p>Para poder solicitar tu <i>token</i> debes de ser un usuario registrado.</p>";
-				$texto['info'].=  t('Por favor, <a href="@drupal-registro">reg@iacutestrense</a> o <a href="@drupal-login">identif&iquense</a> para poder acceder a este servicio.', 
+				$texto['info'].=  t('Por favor, <a href="@drupal-registro">reg&iacute;strense</a> o <a href="@drupal-login">identif&iacute;quense</a> para poder acceder a este servicio.', 
 									array( '@drupal-registro' => 'user/register' , '@drupal-login' => 'user/login?redirect=http://opendatabcn-desa.alfatecsistemas.es/es/tokens') ).'</p></div>';
 				break;
 
