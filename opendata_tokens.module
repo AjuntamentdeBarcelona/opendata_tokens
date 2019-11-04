@@ -47,10 +47,12 @@ function opendata_tokens_block_view( $delta = '' ) {
 			if (user_access('access content')) {
 				
 				// User[] roles: [1] anonymous, [2] authenticated user [3] administrator
-				$block['content']['button_solicitar'] = drupal_render(drupal_get_form('opendata_tokens_form_solicitar'));
-				$block['content']['button_recuperar'] = drupal_render(drupal_get_form('opendata_tokens_form_recuperar'));
-				$block['content']['button_modal'] 	  = opendata_tokens_textos('modal')['modal'];
-				$block['content']['button_salir'] 	  = opendata_tokens_textos('salir')['salir'];
+				$button_solicitar = drupal_render(drupal_get_form('opendata_tokens_form_solicitar'));
+				$button_recuperar = drupal_render(drupal_get_form('opendata_tokens_form_recuperar'));
+				$button_modal 	  = opendata_tokens_textos('modal')['modal'];
+				$button_salir 	  = opendata_tokens_textos('salir')['salir'];
+                
+                $block['content'] = '<div class="tokens"><a id="download"></a>';
 				
 				//Solo un block['content']
 				if( isset($user->roles[1]) )
@@ -59,27 +61,33 @@ function opendata_tokens_block_view( $delta = '' ) {
 					// Usuario anonimo
 					//$block['content'] = opendata_tokens_text_info(false);
 					$texto = opendata_tokens_textos( 'no_user' );
-					$block['content'] = $texto['info'];
+					$block['content'] .= $texto['info'];
 				}
 				else
 				{
+                    $resource_id = $_GET['resource_id'];
 					// Usuario registrado
 					// Comprobaos si tiene token
 					$token = opendata_tokens_get_token();
 					if( empty($token) || $token == "" )
 					{
 						// No tiene token
-						$block['content'] = $block['content']['button_solicitar'] . $block['content']['button_salir'];
+						$block['content'] .= $button_solicitar . $button_recuperar;
 					}
 					else
 					{
 						// Tiene token
 						$texto = opendata_tokens_textos( 'recuperar' );
-						$block['content'] = '<p>' . $texto['token'] . '</p><pre class="token">'. $token . '</pre>' . $block['content']['button_modal']. $block['content']['button_salir'];					
+                        if ($resource_id) {
+                            $block['content'] .= '<div class="avis"><h2>Avís</h2><p>Has d\'incloure el teu token d\'accés a la capçalera de la petició tal i com s\'indica a la secció <strong>Com utilitzar el token</strong> d\'aquesta pàgina per a descarregar aquest recurs, encara que també pots descarregar-lo des des de el següent botó: '.drupal_render(drupal_get_form('opendata_tokens_form_download')).'</div></p>';
+                        }
+						$block['content'] .= '<p>' . $texto['token'] . '</p><pre class="token">'. $token . '</pre>' . $button_modal . $button_salir;					
 					}
 					
 					
 				}
+                
+                $block['content'] .= "</div>";
 			}
 			return $block;
 	}
@@ -325,7 +333,6 @@ function opendata_tokens_form_recuperar( $form, &$form_state )
 		'#type'		=> 'submit',
 		'#name'		=> 'Token' ,
 		'#value'	=> $texto['confirm'],
-		//'#default_value' => variable_get('submit_button', false),
 	);
 	
 	return $form;
@@ -339,6 +346,73 @@ function opendata_tokens_form_recuperar_submit( $form, &$form_state )
 	
 	$new_token = opendata_tokens_update_token();
 }
+
+/** Descargar recurso **/
+function opendata_tokens_form_download( $form, &$form_state )
+{
+	$texto = opendata_tokens_textos('download');
+    
+    $form['token'] = array(
+      '#type' => 'hidden',
+      '#value' => opendata_tokens_get_token(),
+    );
+    
+    $form['resource_id'] = array(
+      '#type' => 'hidden',
+      '#value' => $_GET['resource_id'],
+    );
+    
+    $form['package_id'] = array(
+      '#type' => 'hidden',
+      '#value' => $_GET['package_id'],
+    );
+
+	$form['submit_button'] = array( 
+		'#type'		=> 'submit',
+		'#name'		=> 'Token' ,
+		'#value'	=> $texto['titulo'],
+	);
+	
+	return $form;
+}
+
+function opendata_tokens_form_download_submit( $form, &$form_state )
+{
+    global $user;
+    $token = trim($form_state['values']['token']);
+    $resource_id = trim($form_state['values']['resource_id']);
+    $package_id = trim($form_state['values']['package_id']);
+    
+    if ($user && !empty($token) && !empty($resource_id) && !empty($package_id)) {
+   
+        // Aqui debera de generar el token y guardarlo en la base de datos
+        $opts = array(
+          'http'=>array(
+            'method'=>"GET",
+            'header'=> "Authorization: ".$token
+          )
+        );
+
+        $context = stream_context_create($opts);
+
+        // Open the file using the HTTP headers set above
+        $url = 'http://' . $_SERVER['SERVER_NAME'] . '/data/dataset/'.$package_id.'/resource/'.$resource_id.'/download';
+        $file = file_get_contents($url, false, $context);
+        
+        foreach ($http_response_header as $header) {
+            if (strpos($header, 'Content-Type') === 0) {
+                header($header);
+            }
+        }
+        
+        print_r($file);
+        exit;
+    } else {
+        drupal_set_message( $texto['error'] , 'error');
+    }
+
+}
+
 
 function opendata_tokens_textos( $boton )
 {
@@ -359,6 +433,24 @@ function opendata_tokens_textos( $boton )
 			
 			case 'ca':
 				$texto['titulo'] = 'Token d&apos;access';
+				break;
+		}
+	}
+    
+    if( $boton == 'download' )
+	{
+		switch( $language->language )
+		{
+			case 'es':
+				$texto['titulo'] = 'Descargar';
+				break;
+			
+			case 'en':
+				$texto['titulo'] = 'Download';
+				break;
+			
+			case 'ca':
+				$texto['titulo'] = 'Descarregar';
 				break;
 		}
 	}
@@ -451,7 +543,11 @@ function opendata_tokens_textos( $boton )
 
 			case 'ca':
 				$texto['info'] =  "<div><h2>Registre o Identificaci&oacute;</h2>
-									<p>Per a poder sol&middot;licitar el teu <i>token</i> has de ser un usuari registrat.</p>";
+                                    <div class=\"avis\">
+                                        <h3>Avís</h3>
+                                        <p>Per descarregar aquest recurs, és necessari la sol.licitud prèvia d'un token d'accés</p>
+                                    </div>
+									<p>Per a poder sol&middot;licitar el vostre <em>token</em> has de ser un usuari registrat.</p>";
 				$texto['info'].=  t('Si us plau, <a href="@drupal-registro">registreu-vos</a> o <a href="@drupal-login">identifiqueu-vos</a> per poder accedir a aquest servei.', 
 									array( '@drupal-registro' => 'user/register' , '@drupal-login' => 'user/login?redirect=http://opendatabcn-desa.alfatecsistemas.es/ca/tokens') ).'</p></div>';
 				break;
