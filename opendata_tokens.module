@@ -566,6 +566,8 @@ function opendata_tokens_textos( $boton )
 	}
 	if( $boton == 'no_user')
 	{
+        $resource_id = $_GET['resource_id'];
+        
 		switch( $language->language )
 		{
 			case 'es':
@@ -583,12 +585,34 @@ function opendata_tokens_textos( $boton )
 				break;
 
 			case 'ca':
-				$texto['info'] =  "<div><h2>Registre o Identificaci&oacute;</h2>
-                                    <div class=\"avis\">
-                                        <h3>Avís</h3>
-                                        <p>Per descarregar aquest recurs, és necessari la sol.licitud prèvia d'un token d'accés</p>
-                                    </div>
-									<p>Per a poder sol&middot;licitar el vostre <em>token</em> has de ser un usuari registrat.</p>";
+				$texto['info'] =  "<div><h2>Registre o Identificaci&oacute;</h2>";
+                    
+                if ($resource_id) {
+                    $texto['info'].= '<div class="modal fade in" id="downloadModal" tabindex="-1" role="dialog" aria-labelledby="downloadModalLabel">
+                          <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                <h4 class="modal-title" id="downloadModalLabel">Avís</h4>
+                              </div>
+                              <div class="modal-body">
+                                <i class="bcn-icon-proteccio-dades pull-right" style="font-size: 4em"> </i>
+                                <p>Per descarregar aquest recurs, és necessari la sol.licitud prèvia d\'un token d\'accés.</p>
+                                <p>En aquesta pàgina t\'expliquem com funciona el sistema de tokens d\'Open Data BCN.</p>
+                                <div class="clearfix"></div>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-default pull-right" data-dismiss="modal">D\'acord</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <script type="text/javascript">
+                            jQuery("#downloadModal").modal("show");
+                        </script>';
+                }
+                            
+                $texto['info'].= "<p>Per a poder sol&middot;licitar el vostre <em>token</em> has de ser un usuari registrat.</p>";
 				$texto['info'].=  t('Si us plau, <a href="@drupal-registro">registreu-vos</a> o <a href="@drupal-login">identifiqueu-vos</a> per poder accedir a aquest servei.', 
 									array( '@drupal-registro' => 'user/register' , '@drupal-login' => 'user/login?redirect=http://opendatabcn-pre.alfatecsistemas.es/ca/tokens') ).'</p></div>';
 				break;
