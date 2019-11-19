@@ -66,8 +66,40 @@ function opendata_tokens_block_view( $delta = '' ) {
 				else
 				{
                     $resource_id = $_GET['resource_id'];
+                    if ($resource_id) {
+                        
+                        $block['content'] .= '<div class="modal fade in" id="downloadModal" tabindex="-1" role="dialog" aria-labelledby="downloadModalLabel">
+							  <div class="modal-dialog modal-lg" role="document">
+								<div class="modal-content">
+								  <div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+									<h4 class="modal-title" id="downloadModalLabel">Avís</h4>
+								  </div>
+								  <div class="modal-body">
+                                    <i class="bcn-icon-proteccio-dades pull-right" style="font-size: 4em"> </i>
+									<p>Has d\'incloure el teu token d\'accés a la capçalera de la petició tal i com s\'indica a la secció <strong>Com utilitzar el token</strong> d\'aquesta pàgina per a descarregar aquest recurs, encara que també pots descarregar-lo des des de el següent botó de descàrrega.</p>
+                                    <div class="clearfix"></div>
+								  </div>
+								  <div class="modal-footer">
+									<button type="button" class="btn btn-default pull-left" data-dismiss="modal">Cancel·lar</button>
+									'. drupal_render(drupal_get_form('opendata_tokens_form_download')).'
+								  </div>
+								</div>
+							  </div>
+							</div>
+                            <script type="text/javascript">
+                                jQuery(document).ready(function($) {
+                                    $("#downloadModal").modal("show");
+                                    $("#download-resource").click(function (event) {
+                                        $(this).attr("disabled", true);
+                                        $(this).addClass("btn-loading");
+                                    });
+                                });
+                            </script>';
+                    }
+                        
 					// Usuario registrado
-					// Comprobaos si tiene token
+					// Comprobamos si tiene token
 					$token = opendata_tokens_get_token();
 					if( empty($token) || $token == "" )
 					{
@@ -78,9 +110,7 @@ function opendata_tokens_block_view( $delta = '' ) {
 					{
 						// Tiene token
 						$texto = opendata_tokens_textos( 'recuperar' );
-                        if ($resource_id) {
-                            $block['content'] .= '<div class="avis"><h2>Avís</h2><p>Has d\'incloure el teu token d\'accés a la capçalera de la petició tal i com s\'indica a la secció <strong>Com utilitzar el token</strong> d\'aquesta pàgina per a descarregar aquest recurs, encara que també pots descarregar-lo des des de el següent botó: '.drupal_render(drupal_get_form('opendata_tokens_form_download')).'</div></p>';
-                        }
+                        
 						$block['content'] .= '<p>' . $texto['token'] . '</p><pre class="token">'. $token . '</pre>' . $button_modal . $button_salir;					
 					}
 					
@@ -368,9 +398,11 @@ function opendata_tokens_form_download( $form, &$form_state )
     );
 
 	$form['submit_button'] = array( 
+        '#id'       => 'download-resource', 
 		'#type'		=> 'submit',
 		'#name'		=> 'Token' ,
 		'#value'	=> $texto['titulo'],
+        '#attributes' => array('class' => array('btn-primary'))
 	);
 	
 	return $form;
@@ -382,6 +414,15 @@ function opendata_tokens_form_download_submit( $form, &$form_state )
     $token = trim($form_state['values']['token']);
     $resource_id = trim($form_state['values']['resource_id']);
     $package_id = trim($form_state['values']['package_id']);
+    
+    
+    if (empty($token)) {
+        $token = opendata_tokens_generar_token();
+
+        if(!empty($token)) {
+            $result = opendata_tokens_insert_token($token); 
+        }
+    }
     
     if ($user && !empty($token) && !empty($resource_id) && !empty($package_id)) {
    
@@ -442,15 +483,15 @@ function opendata_tokens_textos( $boton )
 		switch( $language->language )
 		{
 			case 'es':
-				$texto['titulo'] = 'Descargar';
+				$texto['titulo'] = 'Descargar recurso';
 				break;
 			
 			case 'en':
-				$texto['titulo'] = 'Download';
+				$texto['titulo'] = 'Download resource';
 				break;
 			
 			case 'ca':
-				$texto['titulo'] = 'Descarregar';
+				$texto['titulo'] = 'Descarregar recurs';
 				break;
 		}
 	}
